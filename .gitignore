@@ -1,0 +1,49 @@
+# Local environment files; commit only examples with empty credentials.
+.env
+.env.*
+!.env.example
+!.env.*.example
+.envrc
+
+# Dependencies and build artifacts
+node_modules/
+dist/
+target/
+coverage/
+*.tsbuildinfo
+.vite/
+.pnpm-store/
+src-tauri/gen/
+
+# Local execution data and diagnostics
+*.log
+logs/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+.clipweave/
+.local/
+.ollama/
+
+# Private keys, signing credentials, and local secret stores
+secrets/
+.secrets/
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.keychain
+*.keychain-db
+*.stronghold
+
+# OS/editor local files
+.DS_Store
+.idea/
+*.swp
+*.swo
+
+# Keep pnpm-lock.yaml and Cargo.lock tracked for reproducible builds.
