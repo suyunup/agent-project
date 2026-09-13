@@ -68,7 +68,6 @@ fn paste_error() -> String {
     let message = unsafe { CStr::from_ptr(cw_error()) }
         .to_string_lossy()
         .into_owned();
-    eprintln!("ClipWeave paste blocked: {message}");
     format!("{message} 결과를 복사해 직접 붙여넣을 수 있습니다.")
 }
 fn emit_session(app: &tauri::AppHandle, sessions: &Sessions) {

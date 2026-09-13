@@ -213,8 +213,6 @@ char *cw_poll(void) {
     if (!targetWindow) targetWindow = (AXUIElementRef)attribute(targetAX, kAXFocusedWindowAttribute);
     if (targetElement) AXUIElementSetMessagingTimeout(targetElement, 0.1);
     targetRange = attribute(targetElement, kAXSelectedTextRangeAttribute);
-    fprintf(stderr, "ClipWeave AX capture: app=%s, window=%d, element=%d\n",
-        targetApp.bundleIdentifier.UTF8String ?: "unknown", targetWindow != NULL, targetElement != NULL);
     char *result = strdup(captured.UTF8String);
     captured = nil;
     return result;
