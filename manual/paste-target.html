@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><title>ClipWeave 붙여넣기 검수</title>
+<style>body{font:18px system-ui;margin:40px;max-width:800px}textarea{display:block;width:100%;height:180px;font:18px monospace;margin:10px 0 24px}button{padding:8px 16px}pre{white-space:pre-wrap}</style>
+<h1>ClipWeave 붙여넣기 검수</h1>
+<p>아래 원문을 선택해 복사하고, 빈 대상 입력창에서 ⌘V를 누르세요. 페이지는 네트워크 요청이나 데이터 저장을 하지 않습니다.</p>
+<label>원문<textarea spellcheck="false">foo 한글 😀 foo
+  FOO foofood	끝  </textarea></label>
+<label>대상<textarea id="target" spellcheck="false"></textarea></label>
+<p>기대 결과: foo만 bar로 치환되고 공백·줄바꿈·FOO는 그대로 남습니다.</p>
+<button onclick="document.getElementById('target').value = ''; document.getElementById('target').focus()">대상 비우기</button>
+</html>

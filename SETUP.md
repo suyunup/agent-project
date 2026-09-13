@@ -2,6 +2,16 @@
 
 설정·검증일: 2026-09-11. 현재 Mac: macOS 15.5 / Apple Silicon.
 
+## M1 앱 개발·검증
+
+앱 초기화와 M1 구현을 추가했다. 현재 실행 명령과 자동/수동 검증 결과는 [M1_VALIDATION.md](M1_VALIDATION.md)를 참고한다. 아래 도구 설치 기록은 초기 환경 설정 당시의 기록이다.
+
+```sh
+sh scripts/with-dev-env.sh pnpm install --frozen-lockfile
+sh scripts/with-dev-env.sh pnpm app:dev
+sh scripts/with-dev-env.sh pnpm app:build
+```
+
 ## 설치·설정 완료
 
 | 도구 | 확인한 버전·상태 |
@@ -68,6 +78,6 @@ sh scripts/with-dev-env.sh ollama list
 - SDK 15.2로 AppKit·CoreGraphics·Security·WebKit 프레임워크를 링크한 최소 프로그램 빌드·실행 성공. 실제 API 동작 검증을 의미하지 않는다.
 - Ollama 버전 API 응답 및 `qwen3:0.6b` 텍스트 생성 요청 성공: `done: true`, 응답 `OK`.
 
-현재는 개발 도구 준비가 완료된 상태다. Tauri·React·Vite의 프로젝트 의존성은 앱 초기화 시 package.json과 Cargo.toml에 추가할 예정이며 전체 Tauri 빌드는 아직 검증하지 않았다. 전역 Tauri CLI 설치는 하지 않았다.
+초기 환경 설정 당시에는 개발 도구만 준비했다. 이후 package.json·Cargo.toml과 lockfile을 추가하고 전체 Tauri 개발·release 빌드를 검증했다. Tauri CLI는 프로젝트 개발 의존성으로 사용하며 전역 설치하지 않는다.
 
 ⌘V 처리에 필요한 macOS 권한은 실제 앱의 식별자와 실행 경로가 생긴 뒤 설정한다. Gemini·OpenAI API 키는 앱의 비밀 저장 기능이 만들어질 때 등록하며 이번 설정에서 수집하거나 저장하지 않았다.

@@ -1,0 +1,1 @@
+{"identifier":"local-windows","description":"Local M1 UI; no filesystem, network, or shell access","windows":["main","overlay"],"permissions":["core:event:allow-listen","core:event:allow-unlisten"]}
