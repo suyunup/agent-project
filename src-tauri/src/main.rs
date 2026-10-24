@@ -1,4 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod ai;
 mod session;
 use serde::{Deserialize, Serialize};
 use session::{Phase, Sessions};
@@ -32,9 +33,12 @@ struct AppState {
     sessions: Mutex<Sessions>,
 }
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Status {
     permission: bool,
     enabled: bool,
+    ai: Option<ai::PublicConfig>,
+    ai_error: Option<String>,
 }
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -96,10 +100,13 @@ fn show(app: &tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 async fn status(app: tauri::AppHandle) -> Result<Status, String> {
     on_main(app, |_| {
+        let config = ai::Config::from_env();
         Ok(unsafe {
             Status {
                 permission: cw_permission() != 0,
                 enabled: cw_enabled() != 0,
+                ai: config.as_ref().ok().map(|value| value.public()),
+                ai_error: config.err(),
             }
         })
     })
@@ -155,6 +162,44 @@ async fn current_session(
         .unwrap()
         .current
         .clone())
+}
+#[tauri::command]
+async fn ai_summarize(
+    app: tauri::AppHandle,
+    window: tauri::WebviewWindow,
+    id: u64,
+) -> Result<(), String> {
+    if window.label() != "overlay" {
+        return Err("가공 메뉴에서만 실행할 수 있습니다.".into());
+    }
+    let config = ai::Config::from_env()?;
+    let input = {
+        let state = app.state::<AppState>();
+        let mut sessions = state.sessions.lock().unwrap();
+        let input = sessions.begin_ai(id)?;
+        emit_session(&app, &sessions);
+        input
+    };
+    let result = ai::summarize(&config, &input).await;
+    let state = app.state::<AppState>();
+    let mut sessions = state.sessions.lock().unwrap();
+    match result {
+        Ok(output) => {
+            // A cancelled session must never receive a late response.
+            if sessions.finish_ai(id, output).is_ok() {
+                emit_session(&app, &sessions);
+            }
+            Ok(())
+        }
+        Err(message) => {
+            if sessions.fail_ai(id, message.clone()).is_ok() {
+                emit_session(&app, &sessions);
+                Err(message)
+            } else {
+                Ok(())
+            }
+        }
+    }
 }
 #[tauri::command]
 async fn session_action(
@@ -272,6 +317,7 @@ fn tick(app: &tauri::AppHandle) {
     }
 }
 fn main() {
+    ai::load_dotenv();
     tauri::Builder::default()
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
@@ -279,6 +325,7 @@ fn main() {
             request_permission,
             set_enabled,
             current_session,
+            ai_summarize,
             session_action
         ])
         .setup(|app| {

@@ -4,6 +4,7 @@ use serde::Serialize;
 #[serde(rename_all = "camelCase")]
 pub enum Phase {
     Menu,
+    Processing,
     Result,
     Sending,
 }
@@ -51,6 +52,34 @@ impl Sessions {
         }
         s.output = Some(s.input.replace("foo", "bar"));
         s.phase = Phase::Result;
+        Ok(())
+    }
+    pub fn begin_ai(&mut self, id: u64) -> Result<String, String> {
+        let s = self.get(id)?;
+        if s.phase != Phase::Menu {
+            return Err("AI 변환을 시작할 수 없는 상태입니다.".into());
+        }
+        s.phase = Phase::Processing;
+        s.message = Some("AI가 요약하고 있습니다…".into());
+        Ok(s.input.clone())
+    }
+    pub fn finish_ai(&mut self, id: u64, output: String) -> Result<(), String> {
+        let s = self.get(id)?;
+        if s.phase != Phase::Processing {
+            return Err("이미 종료된 AI 요청입니다.".into());
+        }
+        s.output = Some(output);
+        s.phase = Phase::Result;
+        s.message = None;
+        Ok(())
+    }
+    pub fn fail_ai(&mut self, id: u64, message: String) -> Result<(), String> {
+        let s = self.get(id)?;
+        if s.phase != Phase::Processing {
+            return Err("이미 종료된 AI 요청입니다.".into());
+        }
+        s.phase = Phase::Menu;
+        s.message = Some(message);
         Ok(())
     }
     pub fn begin_send(&mut self, id: u64, original: bool) -> Result<String, String> {
@@ -120,5 +149,15 @@ mod tests {
         s.start(String::new());
         s.transform(2).unwrap();
         assert_eq!(s.begin_send(2, false).unwrap(), "");
+    }
+    #[test]
+    fn ai_result_only_applies_to_the_active_processing_session() {
+        let mut s = Sessions::default();
+        s.start("긴 원문".into());
+        assert_eq!(s.begin_ai(1).unwrap(), "긴 원문");
+        assert_eq!(s.get(1).unwrap().phase, Phase::Processing);
+        s.finish_ai(1, "요약".into()).unwrap();
+        assert_eq!(s.get(1).unwrap().output.as_deref(), Some("요약"));
+        assert!(s.finish_ai(1, "늦은 결과".into()).is_err());
     }
 }
